@@ -66,20 +66,3 @@ jobs:
         run: gh release upload v1.0.0 release/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Install jq on Linux
-        if: ${{ runner.os == 'Linux' }}
-        run: sudo apt-get install jq -y
-
-      - name: Install jq on macOS
-        if: ${{ runner.os == 'macOS' }}
-        run: brew install jq
-
-      - name: Install jq on Windows
-        if: ${{ runner.os == 'Windows' }}
-        run: choco install jq
-
-      - name: Verify Upload
-        run: gh release view v1.0.0 --json assets --jq '.assets[] | {name: .name, download_url: .url}'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
