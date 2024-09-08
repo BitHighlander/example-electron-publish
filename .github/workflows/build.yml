@@ -36,33 +36,23 @@ jobs:
 
       - name: Build Release Files
         run: npm run build
+
+      - name: Create GitHub Release
+        uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Install GitHub CLI on Ubuntu
-        if: ${{ runner.os == 'Linux' }}
-        run: sudo apt-get update && sudo apt-get install gh -y
-
-      - name: Install GitHub CLI on macOS
-        if: ${{ runner.os == 'macOS' }}
-        run: brew install gh
-
-      - name: Install GitHub CLI on Windows
-        if: ${{ runner.os == 'Windows' }}
-        run: choco install gh
-
-      - name: Authenticate GitHub CLI
-        run: gh auth login --with-token
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Create Release (if not exists)
-        run: |
-          gh release view v1.0.0 || gh release create v1.0.0 --title "Release v1.0.0" --notes "Release notes for version 1.0.0"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v1.0.0
+          release_name: "Release v1.0.0"
+          draft: false
+          prerelease: false
 
       - name: Upload Artifact to Release
-        run: gh release upload v1.0.0 release/*
+        uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./release/*   # Path to your release files
+          asset_name: "my-app.zip"  # Name of the uploaded artifact
+          asset_content_type: application/zip
