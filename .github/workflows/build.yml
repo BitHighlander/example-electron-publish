@@ -39,15 +39,17 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Install GitHub CLI
-        run: |
-          if [[ ${{ matrix.os }} == 'ubuntu-latest' ]]; then
-            sudo apt install gh -y
-          elif [[ ${{ matrix.os }} == 'macos-latest' ]]; then
-            brew install gh
-          else
-            choco install gh
-        shell: bash
+      - name: Install GitHub CLI on Ubuntu
+        if: ${{ runner.os == 'Linux' }}
+        run: sudo apt-get update && sudo apt-get install gh -y
+
+      - name: Install GitHub CLI on macOS
+        if: ${{ runner.os == 'macOS' }}
+        run: brew install gh
+
+      - name: Install GitHub CLI on Windows
+        if: ${{ runner.os == 'Windows' }}
+        run: powershell "Start-Process powershell -Verb runAs -ArgumentList 'choco install gh'"
 
       - name: Authenticate GitHub CLI
         run: gh auth login --with-token
@@ -64,6 +66,14 @@ jobs:
         run: gh release upload v1.0.0 release/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install jq on Ubuntu and macOS
+        if: ${{ runner.os != 'Windows' }}
+        run: sudo apt-get install jq -y || brew install jq
+
+      - name: Install jq on Windows
+        if: ${{ runner.os == 'Windows' }}
+        run: choco install jq
 
       - name: Verify Upload
         run: gh release view v1.0.0 --json assets --jq '.assets[] | {name: .name, download_url: .url}'
