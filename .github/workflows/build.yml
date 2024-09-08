@@ -47,18 +47,25 @@ jobs:
             brew install gh
           else
             choco install gh
-          fi
+        shell: bash
 
       - name: Authenticate GitHub CLI
-        run: gh auth login --with-token <<< "${{ secrets.GITHUB_TOKEN }}"
+        run: gh auth login --with-token
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create Release (if not exists)
         run: |
           gh release view v1.0.0 || gh release create v1.0.0 --title "Release v1.0.0" --notes "Release notes for version 1.0.0"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload Artifact to Release
-        run: |
-          gh release upload v1.0.0 release/*
+        run: gh release upload v1.0.0 release/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Verify Upload
         run: gh release view v1.0.0 --json assets --jq '.assets[] | {name: .name, download_url: .url}'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
